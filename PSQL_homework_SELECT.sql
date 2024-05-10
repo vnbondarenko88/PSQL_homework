@@ -1,11 +1,9 @@
 -- Задание 2 
 
--- 2.1 Название и продолжительность самого длительного трека.
-SELECT track_name, MAX(track_duration)
+-- 2.1 Название и продолжительность самого длительного трека. Правка № 1
+SELECT track_name
 FROM track
-GROUP BY track_name
-ORDER BY MAX(track_duration) DESC
-LIMIT 1;
+WHERE track_duration  >= (SELECT MAX(track_duration) FROM track);
 
 
 -- 2.2 Название треков, продолжительность которых не менее 3,5 минут.
@@ -60,25 +58,23 @@ FROM album a
 GROUP BY album_name; 
 
 
--- 3.4 Все исполнители, которые не выпустили альбомы в 2020 году.
+-- 3.4 Все исполнители, которые не выпустили альбомы в 2020 году. Правка № 1
 SELECT name
 FROM singer s 
 	JOIN singer_album sa 
 	ON s.singer_id = sa.singer_id 
 	JOIN album a 
 	ON sa.album_id = a.album_id 
-WHERE year_release != 2020;
+WHERE s.name NOT IN (SELECT s.name FROM singer WHERE year_release = 2020);
 
 
--- 3.5 Названия сборников, в которых присутствует конкретный исполнитель (выберите его сами).
+-- 3.5 Названия сборников, в которых присутствует конкретный исполнитель (выберите его сами). Правка № 1
 SELECT c.name 
 FROM singer s
 	JOIN singer_album sa 
 	ON s.singer_id = sa.singer_id 
-	JOIN album a
-	ON sa.album_id = a.album_id 
 	JOIN track t
-	ON a.album_id = t.album_id 
+	ON sa.album_id = t.album_id 
 	JOIN track_collection tc 
 	ON t.track_id  = tc.track_id 
 	JOIN collection c 
@@ -131,13 +127,19 @@ FROM singer s
 WHERE t.track_duration <= (SELECT MIN(track_duration) FROM track);
 
 
--- 4.4 Названия альбомов, содержащих наименьшее количество треков.
+-- 4.4 Названия альбомов, содержащих наименьшее количество треков. Правка № 1
 SELECT a.album_name, COUNT(t.track_id)
 FROM album a 
 	JOIN track t
 	ON a.album_id = t.album_id 
 GROUP BY a.album_name
-ORDER BY COUNT(t.track_id) 
-LIMIT 1;
+HAVING COUNT(t.track_id) = (SELECT COUNT(tr.track_id) 
+							FROM album al
+							JOIN track tr
+							ON al.album_id = tr.album_id
+							GROUP BY al.album_name
+							ORDER BY COUNT(tr.track_id)
+							LIMIT 1);
+
 
 
