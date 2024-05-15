@@ -27,7 +27,7 @@ def create_db(conn):
 """)
         conn.commit()
 
-
+#  Функция, позволяющая добавить нового клиента.
 def add_new_client(conn, first_name, last_name, email, phone=None):
     with conn.cursor() as cur:
 
@@ -41,7 +41,7 @@ def add_new_client(conn, first_name, last_name, email, phone=None):
         conn.commit()
         print(cur.fetchall())
 
-
+#  Функция, позволяющая добавить телефон для существующего клиента.
 def add_phone(conn, client_id, phone):
     with conn.cursor() as cur:
 
@@ -56,7 +56,7 @@ def add_phone(conn, client_id, phone):
         conn.commit()
         print(cur.fetchall())
 
-
+#  Функция, позволяющая изменить данные о клиенте.
 def change_client(conn, first_name=None, last_name=None, email=None, id, client_id, phone=None):
     with conn.cursor() as cur:
 
@@ -82,7 +82,7 @@ def change_client(conn, first_name=None, last_name=None, email=None, id, client_
         conn.commit()
         print(cur.fetchall())
 
-
+#  Функция, позволяющая удалить телефон для существующего клиента.
 def phone_delete(conn, client_id, phone):
     with conn.cursor() as cur:
 
@@ -98,7 +98,7 @@ def phone_delete(conn, client_id, phone):
         conn.commit()
         print(cur.fetchall())
 
-
+#  Функция, позволяющая удалить существующего клиента.
 def client_delete(conn, client_id):
     with conn.cursor() as cur:
 
@@ -113,7 +113,7 @@ def client_delete(conn, client_id):
         conn.commit()
         print(cur.fetchall())
 
-
+#  Функция, позволяющая найти клиента по его данным: имени, фамилии, email или телефону.
 def client_find(conn, first_name=None, last_name=None, email=None, phone=None):
     with conn.cursor() as cur:
 
