@@ -1,3 +1,12 @@
+# cur.execute(""“
+# SELECT *
+# FROM clients cl
+# JOIN phones ph ON cl.client_id = ph.client_id
+# WHERE (first_name = %(first_name)s OR %(first_name)s IS NULL)
+# AND (last_name = %(last_name)s OR %(last_name)s IS NULL)
+# AND (email = %(email)s OR %(email)s IS NULL)
+# AND (phone = %(phone)s OR %(phone)s IS NULL);
+# ”"", {“first_name”: first_name, “last_name”: last_name, “email”: email, “phone”: phone})
 import psycopg2
 
 
@@ -12,7 +21,7 @@ def create_db(conn):
     
         cur.execute("""
                 CREATE TABLE IF NOT EXISTS clients (
-                    id SERIAL PRIMARY KEY,
+                    client_id SERIAL PRIMARY KEY,
                     first_name VARCHAR(30) NOT NULL,
                     last_name VARCHAR(30) NOT NULL,
                     email VARCHAR(60) NULL
@@ -21,11 +30,12 @@ def create_db(conn):
         cur.execute("""
                 CREATE TABLE IF NOT EXISTS phone_number (
                     id SERIAL PRIMARY KEY,
-                    client_id INT NOT NULL REFERENCES clients(id) ON DELETE CASCADE,
+                    client_id INT NOT NULL REFERENCES clients(client_id) ON DELETE CASCADE,
                     phone VARCHAR(64) NULL
                 );
 """)
         conn.commit()
+
 
 #  Функция, позволяющая добавить нового клиента.
 def add_new_client(conn, first_name, last_name, email, phone=None):
@@ -41,6 +51,7 @@ def add_new_client(conn, first_name, last_name, email, phone=None):
         conn.commit()
         print(cur.fetchall())
 
+
 #  Функция, позволяющая добавить телефон для существующего клиента.
 def add_phone(conn, client_id, phone):
     with conn.cursor() as cur:
@@ -51,36 +62,35 @@ def add_phone(conn, client_id, phone):
                 """, (client_id, phone))
         cur.execute("""
             SELECT * FROM phone_number
-            JOIN clients ON clients.id = phone_number.client_id;
+            JOIN clients ON clients.client_id = phone_number.client_id;
 """)
         conn.commit()
         print(cur.fetchall())
 
+
 #  Функция, позволяющая изменить данные о клиенте.
-def change_client(conn, first_name=None, last_name=None, email=None, id, client_id, phone=None):
+def change_client(conn, client_id, first_name=None, last_name=None, email=None, phone=None):
     with conn.cursor() as cur:
 
-        cur.execute("""
-                UPDATE clients
+        cur.execute("""UPDATE clients 
                     SET first_name = %s,
                     last_name = %s,
                     email = %s
-                    WHERE id = %s;
-                """, (first_name, last_name, email, id))
+                    WHERE client_id = %s;
+                    """, (first_name, last_name, email, client_id))
         
-        cur.execute("""
-                UPDATE phone_number
-                    SET client_id = %s,
-                    phone = %s
-                    WHERE id = %s;
-                """, (client_id, phone, id))
-        
+        cur.execute("""UPDATE phone_number
+                    SET phone = %s
+                    WHERE client_id = %s;
+                    """, (phone, client_id))
+
         cur.execute("""
             SELECT * FROM phone_number
-            JOIN clients ON clients.id = phone_number.client_id;
+            JOIN clients ON clients.client_id = phone_number.client_id;
 """)
         conn.commit()
         print(cur.fetchall())
+
 
 #  Функция, позволяющая удалить телефон для существующего клиента.
 def phone_delete(conn, client_id, phone):
@@ -93,7 +103,7 @@ def phone_delete(conn, client_id, phone):
                 """, (client_id, phone))
         cur.execute("""
             SELECT * FROM phone_number
-            JOIN clients ON clients.id = phone_number.client_id;
+            JOIN clients ON clients.client_id = phone_number.client_id;
 """)
         conn.commit()
         print(cur.fetchall())
@@ -104,11 +114,11 @@ def client_delete(conn, client_id):
 
         cur.execute("""
                 DELETE FROM clients
-                WHERE id IN (SELECT client_id FROM phone_number WHERE client_id = %s);
+                WHERE client_id IN (SELECT client_id FROM phone_number WHERE client_id = %s);
                 """, (client_id,))
         cur.execute("""
             SELECT * FROM phone_number
-            JOIN clients ON clients.id = phone_number.client_id;
+            JOIN clients ON clients.client_id = phone_number.client_id;
 """)
         conn.commit()
         print(cur.fetchall())
@@ -129,13 +139,13 @@ def client_find(conn, first_name=None, last_name=None, email=None, phone=None):
         print(cur.fetchall())
 
 
-with psycopg2.connect(database="clients_db", user="postgres", password="v0znLJVA") as conn:
+with psycopg2.connect(database="clients_db", user="postgres", password="password") as conn:
         create_db(conn)
         add_new_client(conn, 'Vadim', 'Bondarenko', 'some@mail.ru')
         add_phone(conn, 1, '89137458965')
-        change_client(conn, 'Maria', 'Kopaeva', 'someMK@mail.ru', 1, 1, '89995554473')
-        phone_delete(conn, 1, '89995554473')
-        client_delete(conn, 1)
-        client_find(conn, email='someMK@mail.ru')
+        change_client(conn, 1, 'Maria', 'Kopaeva', 'someMK@mail.ru', '89665457587')
+        # phone_delete(conn, 1, '89995554473')
+        # client_delete(conn, 1)
+        # client_find(conn, email='someMK@mail.ru')
 
 conn.close()
