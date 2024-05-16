@@ -1,12 +1,3 @@
-# cur.execute(""“
-# SELECT *
-# FROM clients cl
-# JOIN phones ph ON cl.client_id = ph.client_id
-# WHERE (first_name = %(first_name)s OR %(first_name)s IS NULL)
-# AND (last_name = %(last_name)s OR %(last_name)s IS NULL)
-# AND (email = %(email)s OR %(email)s IS NULL)
-# AND (phone = %(phone)s OR %(phone)s IS NULL);
-# ”"", {“first_name”: first_name, “last_name”: last_name, “email”: email, “phone”: phone})
 import psycopg2
 
 
@@ -73,12 +64,17 @@ def change_client(conn, client_id, first_name=None, last_name=None, email=None, 
     with conn.cursor() as cur:
 
         cur.execute("""UPDATE clients 
-                    SET first_name = %s,
-                    last_name = %s,
-                    email = %s
+                    SET first_name = %s
                     WHERE client_id = %s;
-                    """, (first_name, last_name, email, client_id))
-        
+                    """, (first_name, client_id))
+        cur.execute("""UPDATE clients
+                    SET last_name = %s
+                    WHERE client_id = %s;
+                    """, (last_name, client_id))
+        cur.execute("""UPDATE clients
+                    SET email = %s
+                    WHERE client_id = %s;
+                    """, (email, client_id))
         cur.execute("""UPDATE phone_number
                     SET phone = %s
                     WHERE client_id = %s;
@@ -139,11 +135,12 @@ def client_find(conn, first_name=None, last_name=None, email=None, phone=None):
         print(cur.fetchall())
 
 
-with psycopg2.connect(database="clients_db", user="postgres", password="password") as conn:
+with psycopg2.connect(database="clients_db", user="postgres", password="v0znLJVA") as conn:
         create_db(conn)
         add_new_client(conn, 'Vadim', 'Bondarenko', 'some@mail.ru')
         add_phone(conn, 1, '89137458965')
-        change_client(conn, 1, 'Maria', 'Kopaeva', 'someMK@mail.ru', '89665457587')
+        # change_client(conn, 1, 'Maria', 'Kopaeva', 'someMK@mail.ru', '89665457587')
+        change_client(conn, 1, 'Maria')
         # phone_delete(conn, 1, '89995554473')
         # client_delete(conn, 1)
         # client_find(conn, email='someMK@mail.ru')

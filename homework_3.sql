@@ -87,7 +87,27 @@ VALUES (4, 1),
 
 
 
+# cur.execute(""“
+# SELECT *
+# FROM clients cl
+# JOIN phones ph ON cl.client_id = ph.client_id
+# WHERE (first_name = %(first_name)s OR %(first_name)s IS NULL)
+# AND (last_name = %(last_name)s OR %(last_name)s IS NULL)
+# AND (email = %(email)s OR %(email)s IS NULL)
+# AND (phone = %(phone)s OR %(phone)s IS NULL);
+# ”"", {“first_name”: first_name, “last_name”: last_name, “email”: email, “phone”: phone})
 
+# cur.execute("""UPDATE clients 
+#                     SET first_name = %s,
+#                     last_name = %s,
+#                     email = %s
+#                     WHERE client_id = %s;
+#                     """, (first_name, last_name, email, client_id))
+        
+#         cur.execute("""UPDATE phone_number
+#                     SET phone = %s
+#                     WHERE client_id = %s;
+#                     """, (phone, client_id))
 
 
 
