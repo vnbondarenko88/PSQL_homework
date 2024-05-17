@@ -65,11 +65,11 @@ def change_client(conn, client_id, first_name=None, last_name=None, email=None, 
 
         cur.execute("""UPDATE clients
                     SET first_name = %s
-                    WHERE client_id = %s;
+                    WHERE client_id = %s AND first_name IS NULL;
                     """, (first_name, client_id))
         cur.execute("""UPDATE clients
                     SET last_name = %s
-                    WHERE client_id = %s;
+                    WHERE client_id = %s AND last_name IS NULL;
                     """, (last_name, client_id))
         cur.execute("""UPDATE clients
                     SET email = %s
@@ -143,10 +143,10 @@ with psycopg2.connect(database="clients_db", user="postgres", password="") as co
         add_new_client(conn, 'Maria', 'Kopaeva', 'someMK@mail.ru')
         add_phone(conn, 1, '89137458965')
         add_phone(conn, 2, '89665457587')
-        # change_client(conn, 1, 'Maria', 'Kopaeva', 'someMK@mail.ru', '89665457587')
-        # change_client(conn, 1, 'Maria')
-        # phone_delete(conn, 1, '89995554473')
-        # client_delete(conn, 1)
-        client_find(conn, first_name='Maria', email='someMK@mail.ru')
+        change_client(conn, 1, last_name='Cake', email='someMK@mail.ru', phone='89665457587')
+        change_client(conn, 2, 'Maria', phone='888888888', email='hgjfjfjf@kakak')
+        phone_delete(conn, 1, '89995554473')
+        client_delete(conn, 1)
+        client_find(conn, first_name='Maria')
 
 conn.close()
