@@ -147,7 +147,7 @@ def client_find(conn, first_name=None, last_name=None, email=None, phone=None):
         print(cur.fetchall())
 
 
-with psycopg2.connect(database="clients_db", user="postgres", password="v0znLJVA") as conn:
+with psycopg2.connect(database="clients_db", user="postgres", password="") as conn:
     if __name__ == "__main__":
         create_db(conn)
         add_new_client(conn, 'Vadim', 'Bondarenko', 'some@mail.ru')
@@ -158,6 +158,6 @@ with psycopg2.connect(database="clients_db", user="postgres", password="v0znLJVA
         change_client(conn, 2, 'Maria', phone='564562342', email='hgjfjfjf@kakak')
         phone_delete(conn, 1, '88888888')
         client_delete(conn, 1)
-        client_find(conn, first_name='Maria')
+        client_find(conn, first_name='Maria', phone='564562342')
 
 conn.close()
