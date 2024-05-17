@@ -83,19 +83,21 @@ VALUES (4, 1),
 
 
 
+arg_list = {"name": first_name, "last_name": last_name, "email": email, "phone": phone}
+        for key, arg in arg_list.items():
+            if arg:
 
 
 
-
-# cur.execute(""“
-# SELECT *
-# FROM clients cl
-# JOIN phones ph ON cl.client_id = ph.client_id
-# WHERE (first_name = %(first_name)s OR %(first_name)s IS NULL)
-# AND (last_name = %(last_name)s OR %(last_name)s IS NULL)
-# AND (email = %(email)s OR %(email)s IS NULL)
-# AND (phone = %(phone)s OR %(phone)s IS NULL);
-# ”"", {“first_name”: first_name, “last_name”: last_name, “email”: email, “phone”: phone})
+cur.execute(""“
+SELECT *
+FROM clients cl
+JOIN phones ph ON cl.client_id = ph.client_id
+WHERE (first_name = %(first_name)s OR %(first_name)s IS NULL)
+AND (last_name = %(last_name)s OR %(last_name)s IS NULL)
+AND (email = %(email)s OR %(email)s IS NULL)
+AND (phone = %(phone)s OR %(phone)s IS NULL);
+”"", {“first_name”: first_name, “last_name”: last_name, “email”: email, “phone”: phone})
 
 # cur.execute("""UPDATE clients 
 #                     SET first_name = %s,

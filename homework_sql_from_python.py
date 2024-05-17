@@ -63,7 +63,7 @@ def add_phone(conn, client_id, phone):
 def change_client(conn, client_id, first_name=None, last_name=None, email=None, phone=None):
     with conn.cursor() as cur:
 
-        cur.execute("""UPDATE clients 
+        cur.execute("""UPDATE clients
                     SET first_name = %s
                     WHERE client_id = %s;
                     """, (first_name, client_id))
@@ -78,8 +78,7 @@ def change_client(conn, client_id, first_name=None, last_name=None, email=None, 
         cur.execute("""UPDATE phone_number
                     SET phone = %s
                     WHERE client_id = %s;
-                    """, (phone, client_id))
-
+                    """, (phone, client_id)) 
         cur.execute("""
             SELECT * FROM phone_number
             JOIN clients ON clients.client_id = phone_number.client_id;
@@ -104,6 +103,7 @@ def phone_delete(conn, client_id, phone):
         conn.commit()
         print(cur.fetchall())
 
+
 #  Функция, позволяющая удалить существующего клиента.
 def client_delete(conn, client_id):
     with conn.cursor() as cur:
@@ -119,30 +119,34 @@ def client_delete(conn, client_id):
         conn.commit()
         print(cur.fetchall())
 
+
 #  Функция, позволяющая найти клиента по его данным: имени, фамилии, email или телефону.
 def client_find(conn, first_name=None, last_name=None, email=None, phone=None):
     with conn.cursor() as cur:
-
         cur.execute("""
-                SELECT c.first_name, c.last_name, c.email, p.phone
-                FROM clients c
-                LEFT JOIN phone_number p
-                ON c.id = p.client_id
-                WHERE c.first_name = %s OR c.last_name = %s OR c.email = %s OR p.phone = %s;
-                """, (first_name, last_name, email, phone))
-        
+                SELECT *
+                FROM clients cl
+                JOIN phone_number ph ON cl.client_id = ph.client_id
+                WHERE (first_name = %(first_name)s OR %(first_name)s IS NULL)
+                AND (last_name = %(last_name)s OR %(last_name)s IS NULL)
+                AND (email = %(email)s OR %(email)s IS NULL)
+                AND (phone = %(phone)s OR %(phone)s IS NULL);
+                """, {"first_name": first_name, "last_name": last_name, "email": email, "phone": phone})
         conn.commit()
         print(cur.fetchall())
 
 
-with psycopg2.connect(database="clients_db", user="postgres", password="v0znLJVA") as conn:
+with psycopg2.connect(database="clients_db", user="postgres", password="") as conn:
+    if __name__ == "__main__":
         create_db(conn)
         add_new_client(conn, 'Vadim', 'Bondarenko', 'some@mail.ru')
+        add_new_client(conn, 'Maria', 'Kopaeva', 'someMK@mail.ru')
         add_phone(conn, 1, '89137458965')
+        add_phone(conn, 2, '89665457587')
         # change_client(conn, 1, 'Maria', 'Kopaeva', 'someMK@mail.ru', '89665457587')
-        change_client(conn, 1, 'Maria')
+        # change_client(conn, 1, 'Maria')
         # phone_delete(conn, 1, '89995554473')
         # client_delete(conn, 1)
-        # client_find(conn, email='someMK@mail.ru')
+        client_find(conn, first_name='Maria', email='someMK@mail.ru')
 
 conn.close()
