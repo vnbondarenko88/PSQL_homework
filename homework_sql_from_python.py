@@ -52,8 +52,8 @@ def add_phone(conn, client_id, phone):
                 VALUES (%s, %s);
                 """, (client_id, phone))
         cur.execute("""
-            SELECT * FROM phone_number
-            JOIN clients ON clients.client_id = phone_number.client_id;
+            SELECT * FROM clients
+            JOIN phone_number ON clients.client_id = phone_number.client_id;
 """)
         conn.commit()
         print(cur.fetchall())
@@ -63,25 +63,36 @@ def add_phone(conn, client_id, phone):
 def change_client(conn, client_id, first_name=None, last_name=None, email=None, phone=None):
     with conn.cursor() as cur:
 
-        cur.execute("""UPDATE clients
-                    SET first_name = %s
-                    WHERE client_id = %s AND first_name IS NULL;
-                    """, (first_name, client_id))
-        cur.execute("""UPDATE clients
-                    SET last_name = %s
-                    WHERE client_id = %s AND last_name IS NULL;
-                    """, (last_name, client_id))
-        cur.execute("""UPDATE clients
-                    SET email = %s
-                    WHERE client_id = %s;
-                    """, (email, client_id))
-        cur.execute("""UPDATE phone_number
-                    SET phone = %s
-                    WHERE client_id = %s;
-                    """, (phone, client_id)) 
         cur.execute("""
-            SELECT * FROM phone_number
-            JOIN clients ON clients.client_id = phone_number.client_id;
+                SELECT * FROM clients c
+                JOIN phone_number ph
+                ON c.client_id = ph.client_id
+                WHERE c.client_id = %s;
+                """, (client_id,))
+        info = cur.fetchone()
+        if first_name is None:
+            first_name = info[1]
+        if last_name is None:
+            last_name = info[2]
+        if email is None:
+            email = info[3]
+        if phone is None:
+            phone = info[6]
+        cur.execute("""
+                UPDATE clients
+                SET first_name = %s,
+                last_name = %s,
+                email = %s
+                WHERE client_id = %s;
+                """, (first_name, last_name, email, client_id))
+        cur.execute("""
+                UPDATE phone_number
+                SET phone = %s
+                WHERE client_id = %s;
+                """, (phone, client_id))
+        cur.execute("""
+            SELECT * FROM clients
+            JOIN phone_number ON clients.client_id = phone_number.client_id;
 """)
         conn.commit()
         print(cur.fetchall())
@@ -136,16 +147,16 @@ def client_find(conn, first_name=None, last_name=None, email=None, phone=None):
         print(cur.fetchall())
 
 
-with psycopg2.connect(database="clients_db", user="postgres", password="") as conn:
+with psycopg2.connect(database="clients_db", user="postgres", password="v0znLJVA") as conn:
     if __name__ == "__main__":
         create_db(conn)
         add_new_client(conn, 'Vadim', 'Bondarenko', 'some@mail.ru')
         add_new_client(conn, 'Maria', 'Kopaeva', 'someMK@mail.ru')
         add_phone(conn, 1, '89137458965')
         add_phone(conn, 2, '89665457587')
-        change_client(conn, 1, last_name='Cake', email='someMK@mail.ru', phone='89665457587')
-        change_client(conn, 2, 'Maria', phone='888888888', email='hgjfjfjf@kakak')
-        phone_delete(conn, 1, '89995554473')
+        change_client(conn, 1, first_name='Jack', phone='88888888')
+        change_client(conn, 2, 'Maria', phone='564562342', email='hgjfjfjf@kakak')
+        phone_delete(conn, 1, '88888888')
         client_delete(conn, 1)
         client_find(conn, first_name='Maria')
 
